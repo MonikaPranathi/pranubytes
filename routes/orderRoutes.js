@@ -6,7 +6,7 @@ const verifyToken = require('../middleware/authMiddleware');
 // CREATE an order (checkout)
 router.post('/checkout', verifyToken, async (req, res) => {
   try {
-    const { items, paymentMethod } = req.body;
+    const { items, paymentMethod, address } = req.body;
     const userId = req.user.id;
 
     if (!items || items.length === 0) {
@@ -15,9 +15,13 @@ router.post('/checkout', verifyToken, async (req, res) => {
 
     const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+    if (!address || address.trim() === '') {
+      return res.status(400).json({ error: 'Delivery address is required' });
+    }
+
     const [orderResult] = await db.query(
-      'INSERT INTO orders (user_id, status, payment_method, total) VALUES (?, ?, ?, ?)',
-      [userId, 'Placed', paymentMethod, total]
+      'INSERT INTO orders (user_id, status, payment_method, total, address) VALUES (?, ?, ?, ?, ?)',
+      [userId, 'Placed', paymentMethod, total, address]
     );
 
     const orderId = orderResult.insertId;
