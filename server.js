@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api', productRoutes);
 app.use('/api', orderRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', uploadRoutes);
+
 
 app.get('/', (req, res) => {
   res.send('Pranu Bytes API is running');
