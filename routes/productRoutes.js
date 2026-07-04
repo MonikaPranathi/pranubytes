@@ -18,12 +18,30 @@ router.get('/categories', async (req, res) => {
 // CREATE a category (admin only)
 router.post('/categories', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, image_url } = req.body;
     if (!name || name.trim() === '') {
       return res.status(400).json({ error: 'Category name is required' });
     }
-    const [result] = await db.query('INSERT INTO categories (name) VALUES (?)', [name]);
-    res.status(201).json({ id: result.insertId, name });
+    const [result] = await db.query(
+      'INSERT INTO categories (name, image_url) VALUES (?, ?)',
+      [name, image_url || '']
+    );
+    res.status(201).json({ id: result.insertId, name, image_url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// UPDATE a category (admin only)
+router.put('/categories/:id', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { name, image_url } = req.body;
+    await db.query(
+      'UPDATE categories SET name = ?, image_url = ? WHERE id = ?',
+      [name, image_url || '', req.params.id]
+    );
+    res.json({ message: 'Category updated' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
