@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 const verifyToken = require('../middleware/authMiddleware');
+const verifyAdmin = require('../middleware/adminMiddleware');
 
 // CREATE an order (checkout)
 router.post('/checkout', verifyToken, async (req, res) => {
@@ -21,7 +22,7 @@ router.post('/checkout', verifyToken, async (req, res) => {
 
     const [orderResult] = await db.query(
       'INSERT INTO orders (user_id, status, payment_method, total, address) VALUES (?, ?, ?, ?, ?)',
-      [userId, 'Placed', paymentMethod, total, address]
+      [userId, 'Pending', paymentMethod, total, address]
     );
 
     const orderId = orderResult.insertId;
@@ -55,6 +56,22 @@ router.get('/orders', verifyToken, async (req, res) => {
   }
 });
 
+// GET all orders (admin only)
+router.get('/admin/orders', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const [orders] = await db.query(
+      `SELECT orders.*, users.name AS customer_name, users.email AS customer_email
+       FROM orders
+       JOIN users ON orders.user_id = users.id
+       ORDER BY orders.created_at DESC`
+    );
+    res.json(orders);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET single order with its items
 router.get('/orders/:id', verifyToken, async (req, res) => {
   try {
@@ -72,6 +89,33 @@ router.get('/orders/:id', verifyToken, async (req, res) => {
     );
 
     res.json({ ...order[0], items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// UPDATE order status (admin only)
+router.put('/orders/:id/status', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = [
+      'Pending',
+      'Accepted',
+      'Packing',
+      'Packed',
+      'Shipped',
+      'Out for Delivery',
+      'Delivered',
+      'Cancelled',
+    ];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    await db.query('UPDATE orders SET status = ? WHERE id = ?', [status, req.params.id]);
+    res.json({ message: 'Order status updated' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
