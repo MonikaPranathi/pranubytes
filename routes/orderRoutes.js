@@ -7,14 +7,15 @@ const verifyAdmin = require('../middleware/adminMiddleware');
 // CREATE an order (checkout)
 router.post('/checkout', verifyToken, async (req, res) => {
   try {
-    const { items, paymentMethod, address } = req.body;
+    const { items, paymentMethod, address, deliveryFee, platformFee, discount } = req.body;
     const userId = req.user.id;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ error: 'Cart is empty' });
     }
 
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = subtotal + (Number(deliveryFee) || 0) + (Number(platformFee) || 0) - (Number(discount) || 0);
 
     if (!address || address.trim() === '') {
       return res.status(400).json({ error: 'Delivery address is required' });
