@@ -10,6 +10,8 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const addressRoutes = require('./routes/addressRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const couponRoutes = require('./routes/couponRoutes');
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.use('/api', uploadRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', addressRoutes);
 app.use('/api', bannerRoutes);
+app.use('/api', settingsRoutes);
+app.use('/api', couponRoutes);
 
 
 app.get('/', (req, res) => {
