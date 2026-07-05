@@ -9,6 +9,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const addressRoutes = require('./routes/addressRoutes');
+const bannerRoutes = require('./routes/bannerRoutes');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', uploadRoutes);
 app.use('/api', paymentRoutes);
 app.use('/api', addressRoutes);
+app.use('/api', bannerRoutes);
 
 
 app.get('/', (req, res) => {
