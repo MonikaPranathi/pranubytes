@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 const verifyToken = require('../middleware/authMiddleware');
 const verifyAdmin = require('../middleware/adminMiddleware');
+const { sendPushToUser } = require('./pushRoutes');
 
 // CREATE an order (checkout)
 router.post('/checkout', verifyToken, async (req, res) => {
@@ -97,6 +98,7 @@ router.get('/orders/:id', verifyToken, async (req, res) => {
 });
 
 // UPDATE order status (admin only)
+// UPDATE order status (admin only)
 router.put('/orders/:id/status', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { status } = req.body;
@@ -116,11 +118,21 @@ router.put('/orders/:id/status', verifyToken, verifyAdmin, async (req, res) => {
     }
 
     await db.query('UPDATE orders SET status = ? WHERE id = ?', [status, req.params.id]);
+
+    // Send push notification to the customer
+    const [orderRows] = await db.query('SELECT user_id FROM orders WHERE id = ?', [req.params.id]);
+    if (orderRows.length > 0) {
+      const customerId = orderRows[0].user_id;
+      sendPushToUser(customerId, {
+        title: 'Order Update',
+        body: `Your order #${req.params.id} is now ${status}`,
+      });
+    }
+
     res.json({ message: 'Order status updated' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 module.exports = router;
