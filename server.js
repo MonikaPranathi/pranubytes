@@ -12,6 +12,7 @@ const addressRoutes = require('./routes/addressRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const { router: pushRoutes } = require('./routes/pushRoutes');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api', addressRoutes);
 app.use('/api', bannerRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', couponRoutes);
+app.use('/api', pushRoutes);
 
 
 app.get('/', (req, res) => {
