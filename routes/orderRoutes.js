@@ -36,6 +36,15 @@ router.post('/checkout', verifyToken, async (req, res) => {
       );
     }
 
+    // Notify all admins about the new order
+    const [admins] = await db.query('SELECT id FROM users WHERE is_admin = TRUE');
+    for (const admin of admins) {
+      sendPushToUser(admin.id, {
+        title: 'New Order Received!',
+        body: `Order #${orderId} placed — Total: ₹${total}`,
+      });
+    }
+
     res.status(201).json({ message: 'Order placed successfully', orderId });
   } catch (err) {
     console.error(err);
